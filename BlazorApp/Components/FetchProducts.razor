@@ -30,7 +30,7 @@
     {
         try
         {
-            HttpResponseMessage response = await Http.GetAsync("api/products");
+            HttpResponseMessage response = await Http.GetAsync("api/productlist");
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();

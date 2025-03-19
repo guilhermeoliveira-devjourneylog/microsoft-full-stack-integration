@@ -29,7 +29,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Mapeamento do endpoint manual
-app.MapGet("/api/products", () =>
+app.MapGet("/api/productlist", () =>
 {
     return new[]
     {
