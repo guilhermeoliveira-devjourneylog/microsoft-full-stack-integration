@@ -9,7 +9,11 @@
     {
         foreach (var product in products)
         {
-            <li>@product.Name - $@product.Price</li>
+            <li>
+                @product.Name - $@product.Price
+                <br />
+                <small>Category: @product.Category.Name</small>
+            </li>
         }
     }
     else if (errorMessage != null)
@@ -30,7 +34,7 @@
     {
         try
         {
-            HttpResponseMessage response = await Http.GetAsync("api/products");
+            HttpResponseMessage response = await Http.GetAsync("api/productlist");
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
@@ -59,5 +63,12 @@
         public string Name { get; set; }
         public double Price { get; set; }
         public int Stock { get; set; }
+        public Category Category { get; set; } = new Category();
+    }
+
+    public class Category
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

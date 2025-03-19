@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Caching.Memory;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Adicionar suporte a CORS
+// Enable CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazor",
@@ -8,6 +10,9 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
+
+// Implement in-memory caching for product list
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -19,23 +24,34 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Ativar CORS na API
+// Enable CORS
 app.UseCors("AllowBlazor");
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Mapeamento do endpoint manual
-app.MapGet("/api/products", () =>
+// Cache and return product data
+app.MapGet("/api/productlist", async (IMemoryCache cache) =>
 {
-    return new[]
+    const string cacheKey = "product_list";
+
+    if (!cache.TryGetValue(cacheKey, out object products))
     {
-        new { Id = 1, Name = "Laptop", Price = 1200.50, Stock = 25 },
-        new { Id = 2, Name = "Headphones", Price = 50.00, Stock = 100 }
-    };
+        products = new[]
+        {
+            new { Id = 1, Name = "Laptop", Price = 1200.50, Stock = 25, Category = new { Id = 101, Name = "Electronics" } },
+            new { Id = 2, Name = "Headphones", Price = 50.00, Stock = 100, Category = new { Id = 102, Name = "Accessories" } }
+        };
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+
+        cache.Set(cacheKey, products, cacheOptions);
+    }
+
+    return Results.Json(products);
 });
 
 app.Run();
